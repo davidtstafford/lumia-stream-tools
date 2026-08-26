@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recent Followers</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    /* ─────────────────────────────────────────────────────
+       CUSTOMISATION — change these values to match your brand
+       ───────────────────────────────────────────────────── */
+    :root {
+      --accent-color:   #ff4d91;          /* Bar fill & rank highlight */
+      --accent-glow:    rgba(255,77,145,0.35);
+      --bg-color:       rgba(8, 8, 18, 0.88);
+      --row-bg:         rgba(255, 255, 255, 0.06);
+      --row-border:     rgba(255, 255, 255, 0.10);
+      --text-primary:   #ffffff;
+      --text-secondary: rgba(255,255,255,0.55);
+      --gold:   #ffd700;
+      --silver: #c0c0c0;
+      --bronze: #cd7f32;
+      --font-family:    'Poppins', sans-serif;
+      --max-entries:    5;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       BASE RESET — transparent background for OBS
+       ───────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: transparent;
+      font-family: var(--font-family);
+      overflow: hidden;
+      width: 400px;
+      padding: 10px;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       CARD WRAPPER
+       ───────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-color);
+      border-radius: 14px;
+      border: 1px solid var(--row-border);
+      padding: 16px 18px 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* ─────────────────────────────────────────────────────
+       HEADER
+       ───────────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .header-icon {
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .header-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+    }
+
+    .header-subtitle {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       STATUS LINE (shown when no data yet)
+       ───────────────────────────────────────────────────── */
+    .status {
+      text-align: center;
+      padding: 24px 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    .status .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      margin-right: 6px;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       FOLLOWER ROWS
+       ───────────────────────────────────────────────────── */
+    .entries {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .entry {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--row-bg);
+      border: 1px solid var(--row-border);
+      overflow: hidden;
+      transition: transform 0.35s ease, opacity 0.35s ease;
+    }
+
+    /* Accent glow on the newest follower */
+    .entry[data-rank="1"] {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    /* Rank badge */
+    .rank {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.10);
+      color: var(--text-secondary);
+    }
+
+    .entry[data-rank="1"] .rank { background: var(--accent-color); color: #fff; }
+    .entry[data-rank="2"] .rank { background: var(--silver);       color: #000; }
+    .entry[data-rank="3"] .rank { background: var(--bronze);       color: #000; }
+
+    /* Username */
+    .username {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      position: relative;
+    }
+
+    /* "followed" label */
+    .followed-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-color);
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       NEW-ENTRY ANIMATION
+       ───────────────────────────────────────────────────── */
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .entry.new {
+      animation: slideIn 0.35s ease forwards;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       PULSE DOT ANIMATION
+       ───────────────────────────────────────────────────── */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.7); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="header">
+      <span class="header-icon">💜</span>
+      <span class="header-title">Recent Followers</span>
+      <span class="header-subtitle" id="total-followers"></span>
+    </div>
+
+    <div id="status" class="status">
+      <span class="dot"></span>Waiting for followers...
+    </div>
+
+    <div id="entries" class="entries" style="display:none;"></div>
+  </div>
+
+  <script>
+    'use strict';
+
+    // ─── Config ────────────────────────────────────────────────────────────────
+    const MAX_ENTRIES    = 5;          // How many rows to show
+    const TOKEN          = 'lumia892089382'; // Your Lumia Stream API token
+    const WS_URL         = `ws://localhost:39231/api?token=${TOKEN}&name=follower-leaderboard`;
+    const RECONNECT_MS   = 3000;       // How long to wait before reconnecting
+
+    // ─── State ─────────────────────────────────────────────────────────────────
+    // Ordered array of usernames, newest first. Duplicates are moved to front.
+    /** @type {string[]} */
+    const followers = [];
+    let totalFollowers = 0;
+
+    // ─── DOM refs ──────────────────────────────────────────────────────────────
+    const statusEl  = document.getElementById('status');
+    const entriesEl = document.getElementById('entries');
+    const totalEl   = document.getElementById('total-followers');
+
+    // ─── Render ────────────────────────────────────────────────────────────────
+    function render() {
+      const visible = followers.slice(0, MAX_ENTRIES);
+
+      if (visible.length === 0) {
+        statusEl.style.display  = '';
+        entriesEl.style.display = 'none';
+        return;
+      }
+
+      statusEl.style.display  = 'none';
+      entriesEl.style.display = '';
+
+      // Collect existing rows by username for diffing
+      const existingRows = new Map();
+      for (const row of entriesEl.querySelectorAll('.entry')) {
+        existingRows.set(row.dataset.username, row);
+      }
+
+      const newOrder = [];
+
+      visible.forEach((username, index) => {
+        const rank = index + 1;
+        let row = existingRows.get(username);
+
+        if (row) {
+          row.dataset.rank = rank;
+          row.querySelector('.rank').textContent = rank;
+        } else {
+          row = buildRow(username, rank);
+          existingRows.set(username, row);
+        }
+
+        newOrder.push(row);
+      });
+
+      // Remove rows that dropped out of the visible window
+      for (const [username, row] of existingRows) {
+        if (!newOrder.includes(row)) row.remove();
+      }
+
+      // Re-order DOM to match current order
+      newOrder.forEach((row, i) => {
+        if (entriesEl.children[i] !== row) {
+          entriesEl.insertBefore(row, entriesEl.children[i] || null);
+        }
+      });
+
+      totalEl.textContent = `${totalFollowers.toLocaleString()} total`;
+    }
+
+    function buildRow(username, rank) {
+      const row = document.createElement('div');
+      row.className        = 'entry new';
+      row.dataset.rank     = rank;
+      row.dataset.username = username;
+
+      row.innerHTML = `
+        <div class="rank">${rank}</div>
+        <div class="username">${escapeHtml(username)}</div>
+        <span class="followed-label">♥ followed</span>
+      `;
+
+      row.addEventListener('animationend', () => row.classList.remove('new'), { once: true });
+
+      entriesEl.appendChild(row);
+      return row;
+    }
+
+    // ─── Event handling ────────────────────────────────────────────────────────
+
+    function handleMessage(raw) {
+      let payload;
+      try {
+        payload = JSON.parse(raw);
+      } catch {
+        return;
+      }
+
+      // Only process alert events
+      if (payload.type !== 'alert') return;
+
+      // DEBUG — logs all alert events so you can verify the follow event structure.
+      // Remove this line once followers are appearing correctly.
+      console.log('[Followers] alert event:', JSON.stringify(payload));
+
+      // Follow events have data.type === 'follow'
+      if (payload?.data?.type !== 'follow') return;
+
+      const username = (payload?.data?.extraSettings?.username || '').trim();
+      if (!username) return;
+
+      totalFollowers++;
+
+      // Move to front if already present (re-follow / re-sub scenarios)
+      const existing = followers.indexOf(username);
+      if (existing !== -1) followers.splice(existing, 1);
+      followers.unshift(username);
+
+      render();
+    }
+
+    // ─── WebSocket with auto-reconnect ─────────────────────────────────────────
+
+    function connect() {
+      let ws;
+
+      try {
+        ws = new WebSocket(WS_URL);
+      } catch (err) {
+        console.warn('[Followers] WebSocket constructor failed:', err);
+        setTimeout(connect, RECONNECT_MS);
+        return;
+      }
+
+      ws.addEventListener('open', () => {
+        console.info('[Followers] Connected to Lumia Stream');
+      });
+
+      ws.addEventListener('message', (event) => {
+        handleMessage(event.data);
+      });
+
+      ws.addEventListener('close', () => {
+        console.warn('[Followers] Disconnected — reconnecting in', RECONNECT_MS, 'ms');
+        setTimeout(connect, RECONNECT_MS);
+      });
+
+      ws.addEventListener('error', (err) => {
+        console.warn('[Followers] WebSocket error:', err);
+      });
+    }
+
+    // ─── Utilities ─────────────────────────────────────────────────────────────
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // ─── Boot ──────────────────────────────────────────────────────────────────
+    connect();
+  </script>
+
+</body>
+</html>
