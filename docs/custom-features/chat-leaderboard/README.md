@@ -96,7 +96,7 @@ To manually reset mid-stream:
 
 | Problem | Fix |
 |---------|-----|
-| Leaderboard shows "Waiting for chat..." | Lumia Stream isn't running or not connected to chat |
+| Leaderboard shows "Waiting for chat..." | Lumia Stream isn't running, not connected to chat, or the token in `leaderboard.html` is wrong/missing |
 | Names appear but scores don't change | Check the browser console (F12) for WebSocket errors |
 | Overlay is invisible/blank | Check that `leaderboard.html` path is correct in OBS |
 | Names from last stream are still showing | Refresh the browser source cache to reset scores |
@@ -105,7 +105,7 @@ To manually reset mid-stream:
 
 ## How It Works (Technical)
 
-The overlay connects to Lumia Stream's local WebSocket API at `ws://localhost:39231`. Every time a `chat` event arrives, it increments a counter for that username in memory. A ranked list is rebuilt and the DOM is updated. All data lives in the browser tab's memory — nothing is written to disk, so it resets cleanly on reload.
+The overlay connects to Lumia Stream's local WebSocket API at `ws://localhost:39231/?token=YOUR_TOKEN`. Every time a `chat` event arrives, it increments a counter for that username in memory. A ranked list is rebuilt and the DOM is updated. All data lives in the browser tab's memory — nothing is written to disk, so it resets cleanly on reload.
 
 ---
 
