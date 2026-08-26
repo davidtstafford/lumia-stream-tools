@@ -310,12 +310,8 @@
       // Only process alert events
       if (payload.type !== 'alert') return;
 
-      // DEBUG — logs all alert events so you can verify the follow event structure.
-      // Remove this line once followers are appearing correctly.
-      console.log('[Followers] alert event:', JSON.stringify(payload));
-
-      // Follow events have data.type === 'follow'
-      if (payload?.data?.type !== 'follow') return;
+      // Follow events — covers twitch-follower, kick-follower, etc.
+      if (!payload.event?.includes('follower')) return;
 
       const username = (payload?.data?.extraSettings?.username || '').trim();
       if (!username) return;
