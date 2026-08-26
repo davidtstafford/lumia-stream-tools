@@ -248,7 +248,8 @@
 
     // ─── Config ────────────────────────────────────────────────────────────────
     const MAX_ENTRIES    = 5;          // How many rows to show
-    const WS_URL         = 'ws://localhost:39231';
+    const TOKEN          = 'lumia892089382'; // Your Lumia Stream API token
+    const WS_URL         = `ws://localhost:39231/api?token=${TOKEN}&name=leaderboard`;
     const RECONNECT_MS   = 3000;       // How long to wait before reconnecting
 
     // ─── State ─────────────────────────────────────────────────────────────────
@@ -377,14 +378,10 @@
         return; // ignore non-JSON frames
       }
 
-      // Lumia Stream wraps event data under payload.data
-      const data = payload?.data;
-      if (!data) return;
+      // Lumia Stream puts the event type at the top level
+      if (payload.type !== 'chat') return;
 
-      // Only count chat messages
-      if (data.type !== 'chat') return;
-
-      const username = (data.username || data.name || '').trim();
+      const username = (payload?.data?.extraSettings?.username || '').trim();
       if (!username) return;
 
       // Exclude known bots — extend this list as needed
