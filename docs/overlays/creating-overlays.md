@@ -168,4 +168,4 @@ When Lumia Stream sends an event, it looks like this (simplified):
 ## Next Steps
 
 - [Previewing Overlays](previewing-overlays.md) — test without going live
-- [Chat Leaderboard](../custom-features/chat-leaderboard/README.md) — a complete ready-to-use example
+- [Leaderboards](../custom-features/leaderboards/README.md) — complete ready-to-use examples

@@ -89,4 +89,4 @@ Then open `http://localhost:8080/my-overlay.html` in Chrome.
 ## Next Steps
 
 - [Tips & Tricks](../tips-and-tricks/general-tips.md)
-- [Chat Leaderboard](../custom-features/chat-leaderboard/README.md)
+- [Leaderboards](../custom-features/leaderboards/README.md)

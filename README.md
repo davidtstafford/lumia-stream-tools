@@ -29,7 +29,8 @@ A community guide to getting the most out of the **free tier** of [Lumia Stream]
 ### ⚙️ Custom Features
 | Feature | Description |
 |---------|-------------|
-| [Chat Leaderboard](docs/custom-features/chat-leaderboard/README.md) | Live top-5 chatters overlay for OBS/Streamlabs |
+| [Top Chatters](docs/custom-features/leaderboards/README.md#top-chatters--top-chatters-this-streamhtml) | Live top-5 chatters ranked by message count |
+| [Recent Follows](docs/custom-features/leaderboards/README.md#recent-follows--recent-follows-this-streamhtml) | Scrolling list of the most recent followers |
 
 ---
 
@@ -49,9 +50,10 @@ lumia-stream-tools/
     ├── tips-and-tricks/
     │   └── general-tips.md
     └── custom-features/
-        └── chat-leaderboard/
-            ├── README.md                   ← Setup guide
-            └── leaderboard.html            ← Drop into OBS as a browser source
+        └── leaderboards/
+            ├── README.md                        ← Setup guides for all leaderboards
+            ├── top-chatters-this-stream.html    ← Top 5 chatters overlay
+            └── recent-follows-this-stream.html  ← Recent followers overlay
 ```
 
 ---
@@ -62,7 +64,7 @@ lumia-stream-tools/
 2. Follow the setup guide for your OS → [Mac](docs/getting-started/setup-mac.md) | [Windows](docs/getting-started/setup-windows.md)
 3. Connect your streaming platform (Twitch, YouTube, etc.)
 4. Try your first overlay → [Creating Overlays](docs/overlays/creating-overlays.md)
-5. Add the chat leaderboard to OBS → [Chat Leaderboard](docs/custom-features/chat-leaderboard/README.md)
+5. Add a leaderboard overlay to OBS → [Leaderboards](docs/custom-features/leaderboards/README.md)
 
 ---
 

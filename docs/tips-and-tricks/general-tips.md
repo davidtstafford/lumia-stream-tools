@@ -140,4 +140,4 @@ If you're showing chat messages, cap the list at a maximum (e.g. 20 messages). R
 ## Next Steps
 
 - [Creating Overlays](../overlays/creating-overlays.md)
-- [Chat Leaderboard](../custom-features/chat-leaderboard/README.md)
+- [Leaderboards](../custom-features/leaderboards/README.md)

@@ -30,7 +30,7 @@ Understanding the free tier helps you plan your stream setup without hitting une
 | Advanced alert sequencing | Pro tier |
 | Priority support | Pro tier |
 
-> **Tip:** The free tier is genuinely capable for most solo streamers. The WebSocket API and full browser source support mean you can build powerful custom overlays — like the [Chat Leaderboard](../custom-features/chat-leaderboard/README.md) — entirely for free.
+> **Tip:** The free tier is genuinely capable for most solo streamers. The WebSocket API and full browser source support mean you can build powerful custom overlays — like the [Leaderboards](../custom-features/leaderboards/README.md) — entirely for free.
 
 ---
 

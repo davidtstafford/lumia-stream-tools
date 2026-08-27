@@ -104,4 +104,4 @@ Lumia Stream needs to be open for overlays to work. To start it automatically:
 
 - [Free Tier Overview](free-tier-overview.md)
 - [Creating Overlays](../overlays/creating-overlays.md)
-- [Chat Leaderboard feature](../custom-features/chat-leaderboard/README.md)
+- [Custom Features — Leaderboards](../custom-features/leaderboards/README.md)
