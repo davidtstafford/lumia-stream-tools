@@ -31,6 +31,8 @@ A community guide to getting the most out of the **free tier** of [Lumia Stream]
 |---------|-------------|
 | [Top Chatters](docs/custom-features/leaderboards/README.md#top-chatters--top-chatters-this-streamhtml) | Live top-5 chatters ranked by message count |
 | [Recent Follows](docs/custom-features/leaderboards/README.md#recent-follows--recent-follows-this-streamhtml) | Scrolling list of the most recent followers |
+| [Match Score](docs/custom-features/live-scores/README.md#match-score--match-scorehtml) | Live scoreboard for football, rugby, and more (via Sofascore) |
+| [Match Lineups](docs/custom-features/live-scores/README.md#match-lineups--match-lineupshtml) | Starting lineup + bench for both teams |
 
 ---
 
@@ -50,10 +52,14 @@ lumia-stream-tools/
     ├── tips-and-tricks/
     │   └── general-tips.md
     └── custom-features/
-        └── leaderboards/
-            ├── README.md                        ← Setup guides for all leaderboards
-            ├── top-chatters-this-stream.html    ← Top 5 chatters overlay
-            └── recent-follows-this-stream.html  ← Recent followers overlay
+        ├── leaderboards/
+        │   ├── README.md                        ← Setup guides for all leaderboards
+        │   ├── top-chatters-this-stream.html    ← Top 5 chatters overlay
+        │   └── recent-follows-this-stream.html  ← Recent followers overlay
+        └── live-scores/
+            ├── README.md              ← Setup guides for score & lineup overlays
+            ├── match-score.html       ← Live scoreboard overlay
+            └── match-lineups.html     ← Team lineups overlay
 ```
 
 ---
@@ -65,6 +71,7 @@ lumia-stream-tools/
 3. Connect your streaming platform (Twitch, YouTube, etc.)
 4. Try your first overlay → [Creating Overlays](docs/overlays/creating-overlays.md)
 5. Add a leaderboard overlay to OBS → [Leaderboards](docs/custom-features/leaderboards/README.md)
+6. Show a live match score or lineup → [Live Scores](docs/custom-features/live-scores/README.md)
 
 ---
 

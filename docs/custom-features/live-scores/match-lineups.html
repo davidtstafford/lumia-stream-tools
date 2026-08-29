@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Match Lineups</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    /* ─────────────────────────────────────────────────────
+       CUSTOMISATION — change these values to match your brand
+       ───────────────────────────────────────────────────── */
+    :root {
+      --accent-color:    #e8c120;             /* Captain badge / confirmed dot */
+      --bg-color:        rgba(8, 8, 18, 0.88);
+      --row-bg:          rgba(255, 255, 255, 0.06);
+      --row-border:      rgba(255, 255, 255, 0.10);
+      --text-primary:    #ffffff;
+      --text-secondary:  rgba(255,255,255,0.55);
+      --unconfirmed-color: #ffb020;
+      --confirmed-color:   #35d07f;
+      --font-family:     'Poppins', sans-serif;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       BASE RESET — transparent background for OBS
+       ───────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: transparent;  /* transparent in OBS — white in browser preview */
+      font-family: var(--font-family);
+      overflow: hidden;
+      width: 620px;
+      padding: 10px;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       CARD
+       ───────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-color);
+      border-radius: 14px;
+      border: 1px solid var(--row-border);
+      padding: 14px 18px 18px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* ─────────────────────────────────────────────────────
+       HEADER
+       ───────────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--row-border);
+    }
+
+    .header-icon { font-size: 18px; line-height: 1; }
+
+    .header-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+    }
+
+    .status-badge {
+      margin-left: auto;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .status-badge.visible { display: flex; }
+    .status-badge.confirmed   { color: var(--confirmed-color); }
+    .status-badge.unconfirmed { color: var(--unconfirmed-color); }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       STATUS MESSAGES (loading / error)
+       ───────────────────────────────────────────────────── */
+    .state-msg {
+      text-align: center;
+      padding: 24px 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       LINEUP COLUMNS
+       ───────────────────────────────────────────────────── */
+    .lineup-columns {
+      display: flex;
+      gap: 16px;
+    }
+
+    .lineup-column {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .column-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--row-border);
+    }
+
+    .column-logo {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .column-team-name {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      margin: 8px 0 4px;
+    }
+
+    .players-list {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .player-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--row-bg);
+      border: 1px solid var(--row-border);
+    }
+
+    .jersey {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.10);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .player-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .captain-badge {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--accent-color);
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+
+    <div class="header">
+      <span class="header-icon">📋</span>
+      <span class="header-title">Lineups</span>
+      <span class="status-badge" id="status-badge">
+        <span class="status-dot"></span><span id="status-text"></span>
+      </span>
+    </div>
+
+    <!-- Shown while loading, or on error -->
+    <div id="state-msg" class="state-msg">Fetching lineups…</div>
+
+    <!-- Hidden until data loads successfully -->
+    <div id="lineups" class="lineup-columns" style="display:none;">
+
+      <!-- Home team column -->
+      <div class="lineup-column">
+        <div class="column-header">
+          <img
+            class="column-logo"
+            id="home-col-logo"
+            src=""
+            alt=""
+            onerror="this.style.display='none';"
+          />
+          <span class="column-team-name" id="home-col-name"></span>
+        </div>
+        <div class="players-list" id="home-starters"></div>
+        <div class="section-label">Bench</div>
+        <div class="players-list" id="home-bench"></div>
+      </div>
+
+      <!-- Away team column -->
+      <div class="lineup-column">
+        <div class="column-header">
+          <img
+            class="column-logo"
+            id="away-col-logo"
+            src=""
+            alt=""
+            onerror="this.style.display='none';"
+          />
+          <span class="column-team-name" id="away-col-name"></span>
+        </div>
+        <div class="players-list" id="away-starters"></div>
+        <div class="section-label">Bench</div>
+        <div class="players-list" id="away-bench"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    'use strict';
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    //  ► CONFIG
+    //
+    //  How to set up:
+    //    1. Go to sofascore.com, open the match, click the "Lineups" tab. Any
+    //       sport Sofascore covers works — football, rugby league, rugby union, etc.
+    //    2. Copy the URL from your browser's address bar — e.g.:
+    //       https://www.sofascore.com/football/match/newcastle-united-tottenham-hotspur/IO#id:16363256,tab:lineups
+    //    3. Paste it into MATCH_URL below and save.
+    //    4. In OBS: Add a Browser Source → tick "Local File" → browse to this
+    //       file → set width 620, and height to whatever fits your squad size
+    //       (roughly 480–560 works for most 15–17-a-side lineups).
+    //
+    //  MATCH_URL is the recommended way to point this at a match — searching
+    //  by TEAM_FILTER (below) is provided as a convenience but is less
+    //  reliable when several matches are live at once.
+    //
+    //  Lineups are usually only published by Sofascore 30–60 minutes before
+    //  kickoff, so don't worry if nothing shows up until close to game time.
+    //
+    //  The overlay refreshes automatically every REFRESH_INTERVAL_MS ms.
+    // ═══════════════════════════════════════════════════════════════════════════
+    //const MATCH_URL           = 'https://www.sofascore.com/rugby/match/south-africa-new-zealand/CJbsGJb#id:16651327,tab:lineups';
+    const MATCH_URL           = 'https://www.sofascore.com/football/match/newcastle-united-tottenham-hotspur/IO#id:16363256';
+    const TEAM_FILTER         = '';   // fallback: part of a team name, case-insensitive
+    const SPORT_SLUG          = 'rugby-league';  // Sofascore sport slug for TEAM_FILTER auto-detect, e.g. 'football', 'rugby-union'
+    const REFRESH_INTERVAL_MS = 60_000;   // 60 seconds — lineups rarely change once posted
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // ─── Parse the numeric match ID out of a Sofascore URL ────────────────────
+    // Sofascore URLs typically contain a "#id:12345678" fragment (sometimes
+    // followed by ",tab:lineups" etc — the regex below stops at the first
+    // non-digit so that suffix doesn't matter). As a fallback, we also accept
+    // a bare numeric path segment, or the last long digit run in the URL.
+    function parseSofascoreId(url) {
+      let m = url.match(/#id:(\d+)/);
+      if (m) return m[1];
+
+      m = url.match(/\/(\d{5,})(?:[/?#]|$)/);
+      if (m) return m[1];
+
+      const all = url.match(/\d{5,}/g);
+      if (all && all.length) return all[all.length - 1];
+
+      return null;
+    }
+
+    const configuredEventId = MATCH_URL ? parseSofascoreId(MATCH_URL) : null;
+
+    if (MATCH_URL && !configuredEventId) {
+      setStateMsg('⚠ Could not read a match ID from MATCH_URL.\nMake sure you copied the full Sofascore match URL, including the "#id:" part.');
+    } else if (!MATCH_URL && !TEAM_FILTER) {
+      setStateMsg('⚠ Set MATCH_URL or TEAM_FILTER in the CONFIG section at the top of this file.');
+    }
+
+    // ─── DOM refs ─────────────────────────────────────────────────────────────
+    const stateMsgEl     = document.getElementById('state-msg');
+    const lineupsEl      = document.getElementById('lineups');
+    const statusBadgeEl  = document.getElementById('status-badge');
+    const statusTextEl   = document.getElementById('status-text');
+    const homeLogoEl     = document.getElementById('home-col-logo');
+    const awayLogoEl     = document.getElementById('away-col-logo');
+    const homeNameEl     = document.getElementById('home-col-name');
+    const awayNameEl     = document.getElementById('away-col-name');
+    const homeStartersEl = document.getElementById('home-starters');
+    const homeBenchEl    = document.getElementById('home-bench');
+    const awayStartersEl = document.getElementById('away-starters');
+    const awayBenchEl    = document.getElementById('away-bench');
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+    function setStateMsg(msg) {
+      stateMsgEl.textContent  = msg;
+      stateMsgEl.style.display = '';
+      lineupsEl.style.display  = 'none';
+    }
+
+    /** Builds one player row (jersey number + name, optional captain badge). */
+    function buildPlayerRow(entry) {
+      const row = document.createElement('div');
+      row.className = 'player-row';
+
+      const jersey = document.createElement('span');
+      jersey.className   = 'jersey';
+      jersey.textContent  = entry.jerseyNumber ?? entry.player?.jerseyNumber ?? '–';
+
+      const name = document.createElement('span');
+      name.className   = 'player-name';
+      name.textContent = entry.player?.name ?? entry.player?.shortName ?? 'Unknown player';
+
+      row.appendChild(jersey);
+      row.appendChild(name);
+
+      if (entry.captain) {
+        const cap = document.createElement('span');
+        cap.className   = 'captain-badge';
+        cap.textContent = 'C';
+        row.appendChild(cap);
+      }
+
+      return row;
+    }
+
+    /** Renders one team's starters + interchange into the given containers. */
+    function renderTeamPlayers(players, startersEl, benchEl) {
+      startersEl.innerHTML = '';
+      benchEl.innerHTML    = '';
+
+      const sorted = [...(players ?? [])].sort((a, b) => {
+        const na = a.jerseyNumber ?? a.player?.jerseyNumber ?? 99;
+        const nb = b.jerseyNumber ?? b.player?.jerseyNumber ?? 99;
+        return na - nb;
+      });
+
+      for (const entry of sorted) {
+        const target = entry.substitute ? benchEl : startersEl;
+        target.appendChild(buildPlayerRow(entry));
+      }
+    }
+
+    // ─── Sofascore API fetch ────────────────────────────────────────────────────
+    // Sofascore's public API generally sends permissive CORS headers, so we try
+    // a direct request first. CORS_PROXIES are only used as a fallback in case
+    // that ever changes or Cloudflare blocks the direct request.
+    const CORS_PROXIES = [
+      'https://corsproxy.io/?',              // fallback 1
+      'https://api.allorigins.win/raw?url=', // fallback 2 (different IP range)
+    ];
+
+    /** Fetches a URL as JSON, trying direct access first, then CORS proxies. */
+    async function fetchJson(url) {
+      const attempts = [url, ...CORS_PROXIES.map(p => p + encodeURIComponent(url))];
+
+      let lastStatus = null;
+      let lastError;
+      for (const attemptUrl of attempts) {
+        try {
+          const res = await fetch(attemptUrl, {
+            headers: { 'Accept': 'application/json' },
+          });
+          if (res.ok) {
+            const text = await res.text();
+            try {
+              return JSON.parse(text);
+            } catch {
+              // Proxy returned 200 but body isn't JSON — try the next attempt
+              lastError = new Error(`Non-JSON response from ${attemptUrl}`);
+              continue;
+            }
+          }
+          lastStatus = res.status;
+          lastError  = new Error(`Sofascore returned ${res.status} — ${attemptUrl}`);
+        } catch (err) {
+          lastError = err;
+        }
+      }
+
+      if (lastError) lastError.httpStatus = lastStatus;
+      throw lastError;
+    }
+
+    /**
+     * Resolves the numeric event ID and basic team info, either from a fixed
+     * MATCH_URL or by searching live (then today's scheduled) rugby league
+     * matches for a team name matching TEAM_FILTER.
+     */
+    async function resolveEvent() {
+      if (configuredEventId) {
+        const data = await fetchJson(`https://api.sofascore.com/api/v1/event/${configuredEventId}`);
+        if (!data?.event) throw new Error('Unexpected response shape from Sofascore.');
+        return data.event;
+      }
+
+      if (!TEAM_FILTER) {
+        const err = new Error('Set MATCH_URL or TEAM_FILTER in the CONFIG section.');
+        err.configError = true;
+        throw err;
+      }
+
+      const filterLower = TEAM_FILTER.toLowerCase();
+      const matchesFilter = (ev) =>
+        (ev.homeTeam?.name || '').toLowerCase().includes(filterLower) ||
+        (ev.awayTeam?.name || '').toLowerCase().includes(filterLower);
+
+      const live = await fetchJson(`https://api.sofascore.com/api/v1/sport/${SPORT_SLUG}/events/live`);
+      const liveMatch = (live?.events || []).find(matchesFilter);
+      if (liveMatch) return liveMatch;
+
+      const today = new Date().toISOString().slice(0, 10);
+      const scheduled = await fetchJson(`https://api.sofascore.com/api/v1/sport/${SPORT_SLUG}/scheduled-events/${today}`);
+      const scheduledMatch = (scheduled?.events || []).find(matchesFilter);
+      if (scheduledMatch) return scheduledMatch;
+
+      const err = new Error(`No live or scheduled-today ${SPORT_SLUG} match found for "${TEAM_FILTER}".`);
+      err.notFound = true;
+      throw err;
+    }
+
+    // ─── Main render ──────────────────────────────────────────────────────────
+    async function fetchAndRender() {
+      if (!configuredEventId && !TEAM_FILTER) return;
+
+      let event;
+      try {
+        event = await resolveEvent();
+      } catch (err) {
+        let hint;
+        if (err.configError) {
+          hint = String(err.message);
+        } else if (err.notFound) {
+          hint = `${err.message}\nCheck the spelling in TEAM_FILTER, or set MATCH_URL instead.`;
+        } else if (err.httpStatus === 404) {
+          hint = 'Sofascore returned 404 — match ID not found. Paste a valid Sofascore match URL into MATCH_URL.';
+        } else if (err.httpStatus === 403) {
+          hint = 'Sofascore returned 403 — request was blocked. This is rare; try again shortly.';
+        } else {
+          hint = String(err);
+        }
+        setStateMsg(`⚠ Could not load match data. Will retry in ${REFRESH_INTERVAL_MS / 1000}s.\n${hint}`);
+        console.error('[rugby-lineups overlay]', err);
+        return;
+      }
+
+      let lineupData;
+      try {
+        lineupData = await fetchJson(`https://api.sofascore.com/api/v1/event/${event.id}/lineups`);
+      } catch (err) {
+        const hint = err.httpStatus === 404
+          ? 'Lineups not published yet — Sofascore usually posts these 30–60 minutes before kickoff.'
+          : String(err);
+        setStateMsg(`⚠ Could not load lineups. Will retry in ${REFRESH_INTERVAL_MS / 1000}s.\n${hint}`);
+        console.error('[rugby-lineups overlay]', err);
+        return;
+      }
+
+      const home = lineupData?.home;
+      const away = lineupData?.away;
+
+      if (!home?.players?.length || !away?.players?.length) {
+        setStateMsg('⚠ Lineups not available yet for this match.\nSofascore usually publishes lineups shortly before kickoff.');
+        return;
+      }
+
+      // ── Team headers ─────────────────────────────────────────────────────────
+      const homeName = event.homeTeam?.name ?? event.homeTeam?.shortName ?? 'Home';
+      const awayName = event.awayTeam?.name ?? event.awayTeam?.shortName ?? 'Away';
+      homeNameEl.textContent = homeName;
+      awayNameEl.textContent = awayName;
+
+      if (event.homeTeam?.id) homeLogoEl.src = `https://api.sofascore.com/api/v1/team/${event.homeTeam.id}/image`;
+      if (event.awayTeam?.id) awayLogoEl.src = `https://api.sofascore.com/api/v1/team/${event.awayTeam.id}/image`;
+
+      // ── Player lists ────────────────────────────────────────────────────────
+      renderTeamPlayers(home.players, homeStartersEl, homeBenchEl);
+      renderTeamPlayers(away.players, awayStartersEl, awayBenchEl);
+
+      // ── Confirmed / projected badge ─────────────────────────────────────────
+      const confirmed = lineupData.confirmed === true;
+      statusBadgeEl.classList.add('visible');
+      statusBadgeEl.classList.toggle('confirmed', confirmed);
+      statusBadgeEl.classList.toggle('unconfirmed', !confirmed);
+      statusTextEl.textContent = confirmed ? 'Confirmed' : 'Projected';
+
+      // ── Reveal ──────────────────────────────────────────────────────────────
+      stateMsgEl.style.display = 'none';
+      lineupsEl.style.display  = '';
+    }
+
+    // ─── Bootstrap ────────────────────────────────────────────────────────────
+    if (configuredEventId || TEAM_FILTER) {
+      fetchAndRender();
+      setInterval(fetchAndRender, REFRESH_INTERVAL_MS);
+    }
+  </script>
+</body>
+</html>
